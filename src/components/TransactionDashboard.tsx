@@ -1,11 +1,15 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Transaction, RiskAssessment, SystemMetrics } from '../types/transaction';
+import { BusinessRule } from '../types/businessRules';
 import { DashboardHeader } from './DashboardHeader';
 import { SystemMetricsPanel } from './SystemMetricsPanel';
 import { TransactionFeed } from './TransactionFeed';
 import { RiskChart } from './RiskChart';
 import { AlertPanel } from './AlertPanel';
+import { BusinessRulesManager } from './BusinessRulesManager';
+import { MLModelMonitor } from './MLModelMonitor';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface TransactionDashboardProps {
   transactions: Transaction[];
@@ -15,6 +19,10 @@ interface TransactionDashboardProps {
   onStartProcessing: () => void;
   onStopProcessing: () => void;
   onClearData: () => void;
+  businessRules: BusinessRule[];
+  onAddRule: (rule: Omit<BusinessRule, 'id' | 'createdAt' | 'updatedAt'>) => void;
+  onUpdateRule: (ruleId: string, updates: Partial<BusinessRule>) => void;
+  onDeleteRule: (ruleId: string) => void;
 }
 
 export const TransactionDashboard: React.FC<TransactionDashboardProps> = ({
@@ -24,12 +32,44 @@ export const TransactionDashboard: React.FC<TransactionDashboardProps> = ({
   isProcessing,
   onStartProcessing,
   onStopProcessing,
-  onClearData
+  onClearData,
+  businessRules,
+  onAddRule,
+  onUpdateRule,
+  onDeleteRule
 }) => {
+  const [isTraining, setIsTraining] = useState(false);
+
   const highRiskTransactions = transactions.filter(t => {
     const assessment = riskAssessments.get(t.transactionId);
     return assessment && assessment.overallRiskScore >= 70;
   });
+
+  // Mock ML model metrics
+  const mlMetrics = {
+    accuracy: 0.87,
+    precision: 0.85,
+    recall: 0.82,
+    f1Score: 0.84,
+    falsePositiveRate: 0.08,
+    falseNegativeRate: 0.12,
+    modelVersion: 'v2.1.3',
+    trainingDate: new Date('2024-01-15'),
+    predictionsToday: 2847,
+    averageConfidence: 87.3
+  };
+
+  const handleRetrainModel = () => {
+    setIsTraining(true);
+    // Simulate training process
+    setTimeout(() => {
+      setIsTraining(false);
+    }, 10000);
+  };
+
+  const handleUpdateModel = () => {
+    console.log('Updating ML model...');
+  };
 
   return (
     <div className="min-h-screen p-6 text-white">
@@ -40,27 +80,70 @@ export const TransactionDashboard: React.FC<TransactionDashboardProps> = ({
         onClearData={onClearData}
       />
       
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mt-6">
-        {/* System Metrics - Top Row */}
-        <div className="lg:col-span-4">
+      <Tabs defaultValue="dashboard" className="mt-6">
+        <TabsList className="grid w-full grid-cols-4 bg-gray-800/50 border-gray-700">
+          <TabsTrigger value="dashboard" className="data-[state=active]:bg-blue-600">
+            Dashboard
+          </TabsTrigger>
+          <TabsTrigger value="rules" className="data-[state=active]:bg-blue-600">
+            Business Rules
+          </TabsTrigger>
+          <TabsTrigger value="ml" className="data-[state=active]:bg-blue-600">
+            ML Models
+          </TabsTrigger>
+          <TabsTrigger value="analytics" className="data-[state=active]:bg-blue-600">
+            Analytics
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="dashboard" className="space-y-6">
+          {/* System Metrics - Top Row */}
           <SystemMetricsPanel metrics={systemMetrics} />
-        </div>
 
-        {/* Risk Chart - Left Side */}
-        <div className="lg:col-span-2">
-          <RiskChart transactions={transactions} riskAssessments={riskAssessments} />
-        </div>
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            {/* Risk Chart - Left Side */}
+            <div className="lg:col-span-2">
+              <RiskChart transactions={transactions} riskAssessments={riskAssessments} />
+            </div>
 
-        {/* Alert Panel - Right Side */}
-        <div className="lg:col-span-2">
-          <AlertPanel highRiskTransactions={highRiskTransactions} riskAssessments={riskAssessments} />
-        </div>
+            {/* Alert Panel - Right Side */}
+            <div className="lg:col-span-2">
+              <AlertPanel highRiskTransactions={highRiskTransactions} riskAssessments={riskAssessments} />
+            </div>
 
-        {/* Transaction Feed - Full Width */}
-        <div className="lg:col-span-4">
-          <TransactionFeed transactions={transactions} riskAssessments={riskAssessments} />
-        </div>
-      </div>
+            {/* Transaction Feed - Full Width */}
+            <div className="lg:col-span-4">
+              <TransactionFeed transactions={transactions} riskAssessments={riskAssessments} />
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="rules">
+          <BusinessRulesManager
+            rules={businessRules}
+            onAddRule={onAddRule}
+            onUpdateRule={onUpdateRule}
+            onDeleteRule={onDeleteRule}
+          />
+        </TabsContent>
+
+        <TabsContent value="ml">
+          <MLModelMonitor
+            metrics={mlMetrics}
+            isTraining={isTraining}
+            onRetrainModel={handleRetrainModel}
+            onUpdateModel={handleUpdateModel}
+          />
+        </TabsContent>
+
+        <TabsContent value="analytics" className="space-y-6">
+          <div className="text-center text-gray-400 py-12">
+            <h3 className="text-xl font-semibold mb-4">Historical Analytics</h3>
+            <p>Advanced analytics and reporting features coming soon...</p>
+            <p className="text-sm mt-2">This will include transaction trends, fraud patterns, and performance analytics.</p>
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

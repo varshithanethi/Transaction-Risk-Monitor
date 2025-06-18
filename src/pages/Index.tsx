@@ -3,11 +3,14 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { TransactionDashboard } from '../components/TransactionDashboard';
 import { TransactionProcessor } from '../utils/transactionProcessor';
 import { RiskEngine } from '../utils/riskEngine';
+import { BusinessRulesEngine } from '../utils/businessRulesEngine';
 import { Transaction, RiskAssessment, SystemMetrics } from '../types/transaction';
+import { BusinessRule, RuleEngineConfig } from '../types/businessRules';
 
 const Index = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [riskAssessments, setRiskAssessments] = useState<Map<string, RiskAssessment>>(new Map());
+  const [businessRules, setBusinessRules] = useState<BusinessRule[]>([]);
   const [systemMetrics, setSystemMetrics] = useState<SystemMetrics>({
     totalTransactions: 0,
     approvedTransactions: 0,
@@ -20,6 +23,53 @@ const Index = () => {
 
   const transactionProcessor = new TransactionProcessor();
   const riskEngine = new RiskEngine();
+  
+  // Initialize business rules engine
+  const [businessRulesEngine] = useState(() => {
+    const initialConfig: RuleEngineConfig = {
+      rules: [
+        {
+          id: 'rule_001',
+          name: 'High Amount Alert',
+          description: 'Flag transactions over $5,000',
+          condition: 'amount > 5000',
+          action: 'FLAG',
+          threshold: 5000,
+          isActive: true,
+          category: 'AMOUNT',
+          priority: 1,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        },
+        {
+          id: 'rule_002',
+          name: 'High Risk Country Block',
+          description: 'Block transactions from high-risk countries',
+          condition: 'location.risk > 80',
+          action: 'BLOCK',
+          threshold: 80,
+          isActive: true,
+          category: 'LOCATION',
+          priority: 2,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        }
+      ],
+      globalSettings: {
+        maxTransactionAmount: 50000,
+        maxDailyTransactions: 100,
+        blockedCountries: ['Nigeria', 'Russia'],
+        blockedMerchantCategories: ['Gambling'],
+        allowTestMode: true
+      }
+    };
+    return new BusinessRulesEngine(initialConfig);
+  });
+
+  // Update business rules state when engine changes
+  useEffect(() => {
+    setBusinessRules(businessRulesEngine.getRules());
+  }, [businessRulesEngine]);
 
   const processNewTransaction = useCallback(async (transaction: Transaction) => {
     console.log('Processing new transaction:', transaction.transactionId);
@@ -28,12 +78,18 @@ const Index = () => {
     
     // Calculate risk assessment
     const riskAssessment = await riskEngine.assessTransaction(transaction, Array.from(transactions));
+    
+    // Apply business rules
+    const rulesResult = businessRulesEngine.evaluateTransaction(transaction, riskAssessment);
+    
     const processingTime = performance.now() - startTime;
     
-    // Update risk assessment with actual processing time
+    // Update risk assessment with business rules results
     const finalAssessment = {
       ...riskAssessment,
-      processingTime
+      processingTime,
+      recommendation: rulesResult.finalRecommendation,
+      triggeredRules: [...riskAssessment.triggeredRules, ...rulesResult.triggeredRules]
     };
     
     // Update state
@@ -56,8 +112,8 @@ const Index = () => {
       };
     });
 
-    console.log('Transaction processed with risk score:', finalAssessment.overallRiskScore);
-  }, [transactions]);
+    console.log('Transaction processed with risk score:', finalAssessment.overallRiskScore, 'Recommendation:', finalAssessment.recommendation);
+  }, [transactions, businessRulesEngine]);
 
   // Simulate real-time transaction generation
   useEffect(() => {
@@ -104,6 +160,28 @@ const Index = () => {
     });
   };
 
+  const handleAddRule = (rule: Omit<BusinessRule, 'id' | 'createdAt' | 'updatedAt'>) => {
+    const newRule = businessRulesEngine.addRule(rule);
+    setBusinessRules(businessRulesEngine.getRules());
+    console.log('Added new rule:', newRule.name);
+  };
+
+  const handleUpdateRule = (ruleId: string, updates: Partial<BusinessRule>) => {
+    const success = businessRulesEngine.updateRule(ruleId, updates);
+    if (success) {
+      setBusinessRules(businessRulesEngine.getRules());
+      console.log('Updated rule:', ruleId);
+    }
+  };
+
+  const handleDeleteRule = (ruleId: string) => {
+    const success = businessRulesEngine.deleteRule(ruleId);
+    if (success) {
+      setBusinessRules(businessRulesEngine.getRules());
+      console.log('Deleted rule:', ruleId);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       <TransactionDashboard
@@ -114,6 +192,10 @@ const Index = () => {
         onStartProcessing={handleStartProcessing}
         onStopProcessing={handleStopProcessing}
         onClearData={handleClearData}
+        businessRules={businessRules}
+        onAddRule={handleAddRule}
+        onUpdateRule={handleUpdateRule}
+        onDeleteRule={handleDeleteRule}
       />
     </div>
   );
