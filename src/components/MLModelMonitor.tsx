@@ -2,8 +2,10 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Brain, TrendingUp, Target, AlertTriangle, RefreshCw, Activity } from 'lucide-react';
+import { Brain, RefreshCw } from 'lucide-react';
+import { ModelMetrics } from './ModelMetrics';
+import { ModelInfo } from './ModelInfo';
+import { ModelControls } from './ModelControls';
 
 interface MLModelMetrics {
   accuracy: number;
@@ -66,137 +68,28 @@ export const MLModelMonitor: React.FC<MLModelMonitorProps> = ({
         </div>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <div className="p-3 bg-gray-900/50 rounded-lg">
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-sm text-gray-400">Accuracy</span>
-              <Target className="w-4 h-4 text-green-400" />
-            </div>
-            <div className={`text-xl font-bold ${getPerformanceColor(metrics.accuracy, 0.85)}`}>
-              {(metrics.accuracy * 100).toFixed(1)}%
-            </div>
-          </div>
+        <ModelMetrics
+          accuracy={metrics.accuracy}
+          precision={metrics.precision}
+          recall={metrics.recall}
+          f1Score={metrics.f1Score}
+          getPerformanceColor={getPerformanceColor}
+        />
 
-          <div className="p-3 bg-gray-900/50 rounded-lg">
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-sm text-gray-400">Precision</span>
-              <TrendingUp className="w-4 h-4 text-blue-400" />
-            </div>
-            <div className={`text-xl font-bold ${getPerformanceColor(metrics.precision, 0.8)}`}>
-              {(metrics.precision * 100).toFixed(1)}%
-            </div>
-          </div>
+        <ModelInfo
+          metrics={metrics}
+          getPerformanceColor={getPerformanceColor}
+        />
 
-          <div className="p-3 bg-gray-900/50 rounded-lg">
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-sm text-gray-400">Recall</span>
-              <Activity className="w-4 h-4 text-yellow-400" />
-            </div>
-            <div className={`text-xl font-bold ${getPerformanceColor(metrics.recall, 0.8)}`}>
-              {(metrics.recall * 100).toFixed(1)}%
-            </div>
-          </div>
-
-          <div className="p-3 bg-gray-900/50 rounded-lg">
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-sm text-gray-400">F1 Score</span>
-              <Target className="w-4 h-4 text-purple-400" />
-            </div>
-            <div className={`text-xl font-bold ${getPerformanceColor(metrics.f1Score, 0.8)}`}>
-              {(metrics.f1Score * 100).toFixed(1)}%
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          <div className="space-y-3">
-            <h4 className="text-white font-medium">Error Rates</h4>
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-400 text-sm">False Positive Rate</span>
-                <span className={`font-medium ${metrics.falsePositiveRate > 0.1 ? 'text-red-400' : 'text-green-400'}`}>
-                  {(metrics.falsePositiveRate * 100).toFixed(2)}%
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-400 text-sm">False Negative Rate</span>
-                <span className={`font-medium ${metrics.falseNegativeRate > 0.1 ? 'text-red-400' : 'text-green-400'}`}>
-                  {(metrics.falseNegativeRate * 100).toFixed(2)}%
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            <h4 className="text-white font-medium">Model Info</h4>
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-400 text-sm">Version</span>
-                <span className="text-white font-medium">{metrics.modelVersion}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-400 text-sm">Last Trained</span>
-                <span className="text-white font-medium">
-                  {metrics.trainingDate.toLocaleDateString()}
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-400 text-sm">Predictions Today</span>
-                <span className="text-white font-medium">{metrics.predictionsToday.toLocaleString()}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between pt-4 border-t border-gray-700">
-          <div className="flex items-center gap-2">
-            <span className="text-gray-400 text-sm">Average Confidence:</span>
-            <span className={`font-medium ${getPerformanceColor(metrics.averageConfidence / 100, 0.8)}`}>
-              {metrics.averageConfidence.toFixed(1)}%
-            </span>
-          </div>
-          
-          <div className="flex gap-2">
-            <Button
-              onClick={onUpdateModel}
-              variant="outline"
-              size="sm"
-              className="border-gray-600 text-gray-300 hover:bg-gray-700"
-            >
-              Update Model
-            </Button>
-            <Button
-              onClick={onRetrainModel}
-              disabled={isTraining}
-              className="bg-purple-600 hover:bg-purple-700"
-              size="sm"
-            >
-              {isTraining ? (
-                <>
-                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                  Training...
-                </>
-              ) : (
-                <>
-                  <Brain className="w-4 h-4 mr-2" />
-                  Retrain Model
-                </>
-              )}
-            </Button>
-          </div>
-        </div>
-
-        {(metrics.accuracy < 0.8 || metrics.falsePositiveRate > 0.1) && (
-          <div className="mt-4 p-3 bg-yellow-600/20 border border-yellow-600 rounded-lg">
-            <div className="flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 text-yellow-400" />
-              <span className="text-yellow-400 font-medium">Performance Alert</span>
-            </div>
-            <p className="text-yellow-200 text-sm mt-1">
-              Model performance is below optimal thresholds. Consider retraining with recent data.
-            </p>
-          </div>
-        )}
+        <ModelControls
+          averageConfidence={metrics.averageConfidence}
+          accuracy={metrics.accuracy}
+          falsePositiveRate={metrics.falsePositiveRate}
+          isTraining={isTraining}
+          onRetrainModel={onRetrainModel}
+          onUpdateModel={onUpdateModel}
+          getPerformanceColor={getPerformanceColor}
+        />
       </CardContent>
     </Card>
   );
