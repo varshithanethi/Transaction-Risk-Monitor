@@ -9,6 +9,7 @@ import { RiskChart } from './RiskChart';
 import { AlertPanel } from './AlertPanel';
 import { BusinessRulesManager } from './BusinessRulesManager';
 import { MLModelMonitor } from './MLModelMonitor';
+import { HistoricalAnalytics } from './HistoricalAnalytics';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface TransactionDashboardProps {
@@ -45,6 +46,11 @@ export const TransactionDashboard: React.FC<TransactionDashboardProps> = ({
     return assessment && assessment.overallRiskScore >= 70;
   });
 
+  // Calculate pending/review transactions
+  const pendingCount = Array.from(riskAssessments.values()).filter(
+    assessment => assessment.recommendation === 'REVIEW'
+  ).length;
+
   // Mock ML model metrics
   const mlMetrics = {
     accuracy: 0.87,
@@ -72,7 +78,7 @@ export const TransactionDashboard: React.FC<TransactionDashboardProps> = ({
   };
 
   return (
-    <div className="min-h-screen p-6 text-white">
+    <div className="min-h-screen p-3 sm:p-4 lg:p-6 text-white">
       <DashboardHeader
         isProcessing={isProcessing}
         onStartProcessing={onStartProcessing}
@@ -80,39 +86,39 @@ export const TransactionDashboard: React.FC<TransactionDashboardProps> = ({
         onClearData={onClearData}
       />
       
-      <Tabs defaultValue="dashboard" className="mt-6">
-        <TabsList className="grid w-full grid-cols-4 bg-gray-800/50 border-gray-700">
-          <TabsTrigger value="dashboard" className="data-[state=active]:bg-blue-600">
+      <Tabs defaultValue="dashboard" className="mt-4 lg:mt-6">
+        <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 bg-gray-800/50 border-gray-700">
+          <TabsTrigger value="dashboard" className="data-[state=active]:bg-blue-600 text-xs sm:text-sm">
             Dashboard
           </TabsTrigger>
-          <TabsTrigger value="rules" className="data-[state=active]:bg-blue-600">
-            Business Rules
+          <TabsTrigger value="rules" className="data-[state=active]:bg-blue-600 text-xs sm:text-sm">
+            Rules
           </TabsTrigger>
-          <TabsTrigger value="ml" className="data-[state=active]:bg-blue-600">
+          <TabsTrigger value="ml" className="data-[state=active]:bg-blue-600 text-xs sm:text-sm">
             ML Models
           </TabsTrigger>
-          <TabsTrigger value="analytics" className="data-[state=active]:bg-blue-600">
+          <TabsTrigger value="analytics" className="data-[state=active]:bg-blue-600 text-xs sm:text-sm">
             Analytics
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="dashboard" className="space-y-6">
+        <TabsContent value="dashboard" className="space-y-4 lg:space-y-6">
           {/* System Metrics - Top Row */}
-          <SystemMetricsPanel metrics={systemMetrics} />
+          <SystemMetricsPanel metrics={systemMetrics} pendingCount={pendingCount} />
 
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 lg:gap-6">
             {/* Risk Chart - Left Side */}
-            <div className="lg:col-span-2">
+            <div className="xl:col-span-2">
               <RiskChart transactions={transactions} riskAssessments={riskAssessments} />
             </div>
 
             {/* Alert Panel - Right Side */}
-            <div className="lg:col-span-2">
+            <div className="xl:col-span-2">
               <AlertPanel highRiskTransactions={highRiskTransactions} riskAssessments={riskAssessments} />
             </div>
 
             {/* Transaction Feed - Full Width */}
-            <div className="lg:col-span-4">
+            <div className="xl:col-span-4">
               <TransactionFeed transactions={transactions} riskAssessments={riskAssessments} />
             </div>
           </div>
@@ -136,12 +142,11 @@ export const TransactionDashboard: React.FC<TransactionDashboardProps> = ({
           />
         </TabsContent>
 
-        <TabsContent value="analytics" className="space-y-6">
-          <div className="text-center text-gray-400 py-12">
-            <h3 className="text-xl font-semibold mb-4">Historical Analytics</h3>
-            <p>Advanced analytics and reporting features coming soon...</p>
-            <p className="text-sm mt-2">This will include transaction trends, fraud patterns, and performance analytics.</p>
-          </div>
+        <TabsContent value="analytics" className="space-y-4 lg:space-y-6">
+          <HistoricalAnalytics 
+            transactions={transactions}
+            riskAssessments={riskAssessments}
+          />
         </TabsContent>
       </Tabs>
     </div>

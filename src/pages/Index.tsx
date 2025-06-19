@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { TransactionDashboard } from '../components/TransactionDashboard';
 import { TransactionProcessor } from '../utils/transactionProcessor';
@@ -96,24 +95,29 @@ const Index = () => {
     setTransactions(prev => [transaction, ...prev.slice(0, 49)]); // Keep last 50 transactions
     setRiskAssessments(prev => new Map(prev.set(transaction.transactionId, finalAssessment)));
     
-    // Update system metrics
+    // Update system metrics with proper counting
     setSystemMetrics(prev => {
       const newTotal = prev.totalTransactions + 1;
       const newApproved = finalAssessment.recommendation === 'APPROVE' ? prev.approvedTransactions + 1 : prev.approvedTransactions;
       const newDeclined = finalAssessment.recommendation === 'DECLINE' ? prev.declinedTransactions + 1 : prev.declinedTransactions;
+      
+      // Calculate average risk score properly
+      const allAssessments = Array.from(riskAssessments.values());
+      allAssessments.push(finalAssessment);
+      const avgRisk = allAssessments.reduce((sum, a) => sum + a.overallRiskScore, 0) / allAssessments.length;
       
       return {
         ...prev,
         totalTransactions: newTotal,
         approvedTransactions: newApproved,
         declinedTransactions: newDeclined,
-        averageRiskScore: (prev.averageRiskScore * (newTotal - 1) + finalAssessment.overallRiskScore) / newTotal,
+        averageRiskScore: avgRisk,
         averageProcessingTime: (prev.averageProcessingTime * (newTotal - 1) + processingTime) / newTotal
       };
     });
 
     console.log('Transaction processed with risk score:', finalAssessment.overallRiskScore, 'Recommendation:', finalAssessment.recommendation);
-  }, [transactions, businessRulesEngine]);
+  }, [transactions, businessRulesEngine, riskAssessments]);
 
   // Simulate real-time transaction generation
   useEffect(() => {
