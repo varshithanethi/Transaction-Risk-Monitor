@@ -10,6 +10,9 @@ import { AlertPanel } from './AlertPanel';
 import { BusinessRulesManager } from './BusinessRulesManager';
 import { MLModelMonitor } from './MLModelMonitor';
 import { HistoricalAnalytics } from './HistoricalAnalytics';
+import { FraudMonitor } from './FraudMonitor';
+import { PredictiveAnalytics } from './PredictiveAnalytics';
+import { VelocityMonitor } from './VelocityMonitor';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface TransactionDashboardProps {
@@ -87,9 +90,18 @@ export const TransactionDashboard: React.FC<TransactionDashboardProps> = ({
       />
       
       <Tabs defaultValue="dashboard" className="mt-4 lg:mt-6">
-        <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 bg-gray-800/50 border-gray-700">
+        <TabsList className="grid w-full grid-cols-3 lg:grid-cols-7 bg-gray-800/50 border-gray-700">
           <TabsTrigger value="dashboard" className="data-[state=active]:bg-blue-600 text-xs sm:text-sm">
             Dashboard
+          </TabsTrigger>
+          <TabsTrigger value="fraud-monitor" className="data-[state=active]:bg-blue-600 text-xs sm:text-sm">
+            Fraud Monitor
+          </TabsTrigger>
+          <TabsTrigger value="velocity" className="data-[state=active]:bg-blue-600 text-xs sm:text-sm">
+            Velocity
+          </TabsTrigger>
+          <TabsTrigger value="predictive" className="data-[state=active]:bg-blue-600 text-xs sm:text-sm">
+            Predictive
           </TabsTrigger>
           <TabsTrigger value="rules" className="data-[state=active]:bg-blue-600 text-xs sm:text-sm">
             Rules
@@ -122,6 +134,27 @@ export const TransactionDashboard: React.FC<TransactionDashboardProps> = ({
               <TransactionFeed transactions={transactions} riskAssessments={riskAssessments} />
             </div>
           </div>
+        </TabsContent>
+
+        <TabsContent value="fraud-monitor">
+          <FraudMonitor 
+            transactions={transactions}
+            riskAssessments={riskAssessments}
+          />
+        </TabsContent>
+
+        <TabsContent value="velocity">
+          <VelocityMonitor 
+            transactions={transactions}
+            riskAssessments={riskAssessments}
+          />
+        </TabsContent>
+
+        <TabsContent value="predictive">
+          <PredictiveAnalytics 
+            transactions={transactions}
+            riskAssessments={riskAssessments}
+          />
         </TabsContent>
 
         <TabsContent value="rules">
