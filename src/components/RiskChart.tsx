@@ -1,4 +1,3 @@
-
 import React, { useMemo } from 'react';
 import { Transaction, RiskAssessment } from '../types/transaction';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -40,12 +39,12 @@ export const RiskChart: React.FC<RiskChartProps> = ({ transactions, riskAssessme
   }, [riskAssessments]);
 
   const customLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, name, value }: any) => {
+    if (percent < 0.08) return null; // Don't show label if slice is too small (increased threshold)
+
     const RADIAN = Math.PI / 180;
-    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+    const radius = outerRadius + 30; // Position labels outside the pie
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
     const y = cy + radius * Math.sin(-midAngle * RADIAN);
-
-    if (percent < 0.05) return null; // Don't show label if slice is too small
 
     return (
       <text 
@@ -54,10 +53,9 @@ export const RiskChart: React.FC<RiskChartProps> = ({ transactions, riskAssessme
         fill="#ffffff" 
         textAnchor={x > cx ? 'start' : 'end'} 
         dominantBaseline="central"
-        fontSize="12"
-        fontWeight="500"
-        stroke="#000000"
-        strokeWidth="0.5"
+        fontSize="14"
+        fontWeight="600"
+        className="drop-shadow-lg"
       >
         {`${name}: ${value}`}
       </text>
@@ -119,7 +117,7 @@ export const RiskChart: React.FC<RiskChartProps> = ({ transactions, riskAssessme
           <CardTitle className="text-white">Risk Distribution</CardTitle>
         </CardHeader>
         <CardContent>
-          <ResponsiveContainer width="100%" height={200}>
+          <ResponsiveContainer width="100%" height={280}>
             <PieChart>
               <Pie
                 data={riskDistribution}
@@ -127,8 +125,8 @@ export const RiskChart: React.FC<RiskChartProps> = ({ transactions, riskAssessme
                 cy="50%"
                 labelLine={false}
                 label={customLabel}
-                innerRadius={40}
-                outerRadius={80}
+                innerRadius={50}
+                outerRadius={90}
                 dataKey="value"
               >
                 {riskDistribution.map((entry, index) => (
