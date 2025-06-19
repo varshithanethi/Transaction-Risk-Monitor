@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Transaction, RiskAssessment } from '../types/transaction';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -104,7 +103,7 @@ export const TransactionFeed: React.FC<TransactionFeedProps> = ({
             Live Transaction Feed
             {transactions.length > 0 && (
               <Badge variant="outline" className="border-blue-500 text-blue-400">
-                {filteredTransactions.length} of {transactions.length}
+                {filteredTransactions.length} filtered / {transactions.length} total
               </Badge>
             )}
           </CardTitle>
@@ -159,7 +158,7 @@ export const TransactionFeed: React.FC<TransactionFeedProps> = ({
               </p>
             </div>
           ) : (
-            filteredTransactions.slice(0, 15).map((transaction) => {
+            filteredTransactions.slice(0, 25).map((transaction) => {
               const assessment = riskAssessments.get(transaction.transactionId);
               const isSelected = selectedTransaction === transaction.transactionId;
               

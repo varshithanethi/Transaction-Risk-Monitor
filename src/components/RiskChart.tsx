@@ -11,7 +11,7 @@ interface RiskChartProps {
 
 export const RiskChart: React.FC<RiskChartProps> = ({ transactions, riskAssessments }) => {
   const chartData = useMemo(() => {
-    return transactions.slice(0, 20).reverse().map((transaction, index) => {
+    return transactions.slice(0, 50).reverse().map((transaction, index) => {
       const assessment = riskAssessments.get(transaction.transactionId);
       return {
         index: index + 1,
@@ -33,17 +33,42 @@ export const RiskChart: React.FC<RiskChartProps> = ({ transactions, riskAssessme
     });
 
     return [
-      { name: 'Low Risk', value: distribution.low, color: '#22c55e' },
-      { name: 'Medium Risk', value: distribution.medium, color: '#eab308' },
+      { name: 'Low Risk', value: distribution.low, color: '#10b981' },
+      { name: 'Medium Risk', value: distribution.medium, color: '#f59e0b' },
       { name: 'High Risk', value: distribution.high, color: '#ef4444' }
     ];
   }, [riskAssessments]);
+
+  const customLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, name, value }: any) => {
+    const RADIAN = Math.PI / 180;
+    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+    if (percent < 0.05) return null; // Don't show label if slice is too small
+
+    return (
+      <text 
+        x={x} 
+        y={y} 
+        fill="#ffffff" 
+        textAnchor={x > cx ? 'start' : 'end'} 
+        dominantBaseline="central"
+        fontSize="12"
+        fontWeight="500"
+        stroke="#000000"
+        strokeWidth="0.5"
+      >
+        {`${name}: ${value}`}
+      </text>
+    );
+  };
 
   return (
     <div className="space-y-4">
       <Card className="bg-gray-800/50 border-gray-700 backdrop-blur-sm">
         <CardHeader>
-          <CardTitle className="text-white">Risk Score Trend</CardTitle>
+          <CardTitle className="text-white">Risk Score Trend (Last 50 Transactions)</CardTitle>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={250}>
@@ -100,10 +125,11 @@ export const RiskChart: React.FC<RiskChartProps> = ({ transactions, riskAssessme
                 data={riskDistribution}
                 cx="50%"
                 cy="50%"
+                labelLine={false}
+                label={customLabel}
                 innerRadius={40}
                 outerRadius={80}
                 dataKey="value"
-                label={({ name, value }) => `${name}: ${value}`}
               >
                 {riskDistribution.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />
