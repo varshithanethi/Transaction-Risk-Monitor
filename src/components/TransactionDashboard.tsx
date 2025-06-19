@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Transaction, RiskAssessment, SystemMetrics } from '../types/transaction';
 import { BusinessRule } from '../types/businessRules';
@@ -92,19 +91,19 @@ export const TransactionDashboard: React.FC<TransactionDashboardProps> = ({
       <Tabs defaultValue="dashboard" className="mt-4 lg:mt-6">
         <TabsList className="grid w-full grid-cols-3 lg:grid-cols-7 bg-gray-800/50 border-gray-700">
           <TabsTrigger value="dashboard" className="data-[state=active]:bg-blue-600 text-xs sm:text-sm">
-            Dashboard
+            Overview
           </TabsTrigger>
           <TabsTrigger value="fraud-monitor" className="data-[state=active]:bg-blue-600 text-xs sm:text-sm">
-            Fraud Monitor
+            Incidents
           </TabsTrigger>
           <TabsTrigger value="velocity" className="data-[state=active]:bg-blue-600 text-xs sm:text-sm">
             Velocity
           </TabsTrigger>
           <TabsTrigger value="predictive" className="data-[state=active]:bg-blue-600 text-xs sm:text-sm">
-            Predictive
+            Forecasting
           </TabsTrigger>
           <TabsTrigger value="rules" className="data-[state=active]:bg-blue-600 text-xs sm:text-sm">
-            Rules
+            Rules Engine
           </TabsTrigger>
           <TabsTrigger value="ml" className="data-[state=active]:bg-blue-600 text-xs sm:text-sm">
             ML Models

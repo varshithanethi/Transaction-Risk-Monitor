@@ -159,7 +159,7 @@ export const PredictiveAnalytics: React.FC<PredictiveAnalyticsProps> = ({
                   <XAxis 
                     dataKey="hour" 
                     stroke="#9CA3AF"
-                    formatter={(value) => `${value}:00`}
+                    tickFormatter={(value) => `${value}:00`}
                   />
                   <YAxis stroke="#9CA3AF" />
                   <Tooltip 
