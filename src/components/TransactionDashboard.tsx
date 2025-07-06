@@ -6,11 +6,11 @@ import { SystemMetricsPanel } from './SystemMetricsPanel';
 import { TransactionFeed } from './TransactionFeed';
 import { RiskChart } from './RiskChart';
 import { AlertPanel } from './AlertPanel';
-import { BusinessRulesManager } from './BusinessRulesManager';
+import { BusinessRulesManager } from './rules/BusinessRulesManager';
 import { MLModelMonitor } from './MLModelMonitor';
 import { HistoricalAnalytics } from './HistoricalAnalytics';
-import { FraudMonitor } from './FraudMonitor';
-import { PredictiveAnalytics } from './PredictiveAnalytics';
+import { FraudMonitor } from './fraud/FraudMonitor';
+import { PredictiveAnalytics } from './predictive/PredictiveAnalytics';
 import { VelocityMonitor } from './VelocityMonitor';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
